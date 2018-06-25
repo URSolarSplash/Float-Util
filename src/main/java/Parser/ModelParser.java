@@ -1,4 +1,6 @@
-package Model;
+package Parser;
+
+import Model.Model;
 
 import java.io.File;
 

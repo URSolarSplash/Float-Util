@@ -1,11 +1,18 @@
-import Model.ModelParser;
-import Model.ModelParserLibrary;
+package Simulation;
+
+import Model.*;
+import Parser.ModelParser;
+import Parser.ModelParserLibrary;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class FloatUtilMain {
+
+    public static String units = "in";
 
     public static void main(String[] args) {
         printHeader("Float-Util v1.0");
@@ -24,7 +31,7 @@ public class FloatUtilMain {
             print("\n");
             return;
         }
-        if (!(numArgs == 1 | numArgs == 2)){
+        if (!(numArgs == 1 | numArgs == 2 | numArgs == 3)){
             log("Too many command-line parameters!");
             log("Consult 'float-util --help' for usage instructions.");
             print("\n");
@@ -50,7 +57,7 @@ public class FloatUtilMain {
                 if (parser == null){
 
                     log("Error: No parser implemented for file type '"+fileType+"'!");
-                    log("Parsers available are: ");
+                    log("Parser available are: ");
                     for (String parserKey : modelParserLibrary.parsers.keySet()){
                         log(" - "+parserKey);
                     }
@@ -85,11 +92,46 @@ public class FloatUtilMain {
             return;
         }
 
+        if (numArgs == 3){
+            units = args[3];
+            log("Units specified as "+units+"!");
+        } else {
+            log("Using default units ("+units+")!");
+        }
+
         printHeader("IO Summary");
         log("INPUT FILE: "+inputFile.getPath());
         log("OUTPUT FILE: "+outputFile.getPath());
+        log("--- Loading File ----");
+        log("Loading model file...");
+        Model inputModel = parser.parse(inputFile);
+
+        if (inputModel == null){
+            log("Error: Failed to load model!");
+            print("\n");
+            return;
+
+        }
+
+
+        log("Loaded model. Model basic statistics:");
+        log("- Num triangles: "+inputModel.getTriangles().size());
+        log("- Num vertices: "+inputModel.getVertices().size());
 
         printHeader("Simulation Setup");
+        if (inputModel.getTriangles().size() == 0){
+            log("Warning: Your model has 0 triangles!");
+            log("Note: Model must be in ASCII STL format.");
+            log("No calculation will be performed.");
+            print("\n");
+            return;
+        }
+        BoundingBox modelSize = inputModel.getBoundingBox();
+        log("- Model width: "+modelSize.getWidth()+" "+units);
+        log("- Model height: "+modelSize.getHeight()+" "+units);
+        log("- Model depth: "+modelSize.getDepth()+" "+units);
+        log("- Model volume: "+ inputModel.getVolume()+" "+units+"^3");
+        log("- Model surface area: "+ inputModel.getSurfaceArea()+" "+units+"^2");
 
 
     }
@@ -100,6 +142,7 @@ public class FloatUtilMain {
         print("  float-util --help - Displays this menu.");
         print("  float-util <input file> - Outputs the PDF report to a file with the same name as the input.");
         print("  float-util <input file> <output file> - Outputs the PDF report to the specified file.");
+        print("  float-util <input file> <output file> <units> - Outputs the PDF report to the specified file, and uses the specified units.");
     }
 
     private static long startTime = System.currentTimeMillis();
@@ -127,7 +170,12 @@ public class FloatUtilMain {
 
     //Adds a datetime before message
     public static void log(String text){
-        String formattedTime = "[ " + Utilities.convertTime(System.currentTimeMillis() - startTime)+" ] ";
+        String formattedTime = "[ " + convertTime(System.currentTimeMillis() - startTime)+" ] ";
         System.out.println(formattedTime + text);
+    }
+
+
+    public static String convertTime(long millis) {
+        return (new SimpleDateFormat("mm:ss:SSS")).format(new Date(millis));
     }
 }

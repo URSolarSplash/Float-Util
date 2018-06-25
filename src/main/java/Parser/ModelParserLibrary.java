@@ -1,6 +1,4 @@
-package Model;
-
-import Model.Parsers.StlParser;
+package Parser;
 
 import java.util.HashMap;
 

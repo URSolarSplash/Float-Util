@@ -24,11 +24,13 @@ switch ( OperatingSystem.current() ) {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile 'org.apache.commons:commons-lang3:3.7'
     compile group: 'org.springframework', name: 'spring-core', version: '5.0.7.RELEASE'
     compileOnly 'org.projectlombok:lombok:1.16.18'
     compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.9'
+    compile 'cz.advel.jbullet:jbullet:20101010-1'
 
     compile "org.lwjgl:lwjgl:$lwjglVersion"
     compile "org.lwjgl:lwjgl-assimp:$lwjglVersion"

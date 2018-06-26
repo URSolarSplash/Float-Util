@@ -36,4 +36,18 @@ public class Triangle {
         vertices.add(v3);
         return vertices;
     }
+
+    public double getArea(){
+        double a = getDistance(v1,v2);
+        double b = getDistance(v2,v3);
+        double c = getDistance(v3,v1);
+        double s = (a + b + c) / 2;
+        return Math.sqrt((s*(s-a) * (s-b)*(s-c)));
+    }
+
+    private double getDistance(Vector3 vec1, Vector3 vec2){
+        return Math.sqrt(Math.pow(vec1.getX()-vec2.getX(), 2)
+                + Math.pow(vec1.getY()-vec2.getY(), 2)
+                + Math.pow(vec1.getZ()-vec2.getZ(), 2));
+    }
 }

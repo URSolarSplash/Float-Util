@@ -1,8 +1,19 @@
 package Model;
 
+import Simulation.FloatUtilMain;
+import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.linearmath.DefaultMotionState;
+import eu.mihosoft.jcsg.*;
+import eu.mihosoft.vvecmath.ModifiableVector3dImpl;
+import eu.mihosoft.vvecmath.Transform;
+import eu.mihosoft.vvecmath.Vector3d;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.vecmath.Matrix3f;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +23,126 @@ public class Model {
     private List<Triangle> triangles = new ArrayList<Triangle>();
     private Vector3 position = new Vector3();
     private Vector3 rotation = new Vector3();
+    private CSG csgModel;
+    private CSG plane;
+    private double density = 1;
+    private double mass = 1;
+
+    public double getCalculatedMass(){
+        return density * getVolume();
+    }
 
     public Model(List<Triangle> triangles) {
         this.triangles = triangles;
     }
 
+    //Model from CSG
+    public Model(CSG in){
+        for (Polygon poly : in.getPolygons()){
+            if (poly.vertices.size() == 3) {
+                Vertex v1 = poly.vertices.get(0);
+                Vertex v2 = poly.vertices.get(1);
+                Vertex v3 = poly.vertices.get(2);
+                Vector3 v1v = new Vector3(v1.pos.x(), v1.pos.y(), v1.pos.z());
+                Vector3 v2v = new Vector3(v2.pos.x(), v2.pos.y(), v2.pos.z());
+                Vector3 v3v = new Vector3(v3.pos.x(), v3.pos.y(), v3.pos.z());
+                triangles.add(new Triangle(v1v, v2v, v3v));
+            } else if (poly.vertices.size() == 4){
+                Vertex v1 = poly.vertices.get(0);
+                Vertex v2 = poly.vertices.get(1);
+                Vertex v3 = poly.vertices.get(2);
+                Vertex v4 = poly.vertices.get(3);
+                Vector3 v1v = new Vector3(v1.pos.x(), v1.pos.y(), v1.pos.z());
+                Vector3 v2v = new Vector3(v2.pos.x(), v2.pos.y(), v2.pos.z());
+                Vector3 v3v = new Vector3(v3.pos.x(), v3.pos.y(), v3.pos.z());
+                Vector3 v4v = new Vector3(v4.pos.x(), v4.pos.y(), v4.pos.z());
+                triangles.add(new Triangle(v1v, v2v, v3v));
+                triangles.add(new Triangle(v1v, v3v, v4v));
+
+            }
+
+            //0 1 2 3
+
+            //0 1 2
+            //0 2 3
+
+            /*
+            3-------2
+            |      /|
+            |    /  |
+            |  /    |
+            |/      |
+            0-------1
+             */
+        }
+    }
+
+    public Vector3 getCenterOfMass(){
+        // For now, use the average of centers of all the triangles
+        //This is COG of the shell but not the actual body :(
+        //to try to make it more realistic, weight by the area of the triangle
+
+        Vector3 out = new Vector3();
+        double totalSurfaceArea = getSurfaceArea();
+
+        for (Triangle tri : triangles){
+            // Find centroid of triangle
+            double x = (tri.getV1().getX() + tri.getV2().getX() + tri.getV3().getX()) / 3;
+            double y = (tri.getV1().getY() + tri.getV2().getY() + tri.getV3().getY()) / 3;
+            double z = (tri.getV1().getZ() + tri.getV2().getZ() + tri.getV3().getZ()) / 3;
+            double area = tri.getArea();
+            x *= area;
+            y *= area;
+            z *= area;
+            out.setX(out.getX() + x);
+            out.setY(out.getY() + y);
+            out.setZ(out.getZ() + z);
+        }
+
+
+        out.setX(out.getX() / (totalSurfaceArea));
+        out.setY(out.getY() / (totalSurfaceArea));
+        out.setZ(out.getZ() / (totalSurfaceArea));
+        return out;
+    }
+
     public void addTriangle(Triangle triangle){
         triangles.add(triangle);
+    }
+
+    public void calculateCSG(){
+        List<Polygon> polygons = new ArrayList<>();
+        List<Vector3d> vertices = new ArrayList<>();
+        for (Triangle tri : triangles){
+            vertices.add(tri.getV1().clone());
+            vertices.add(tri.getV2().clone());
+            vertices.add(tri.getV3().clone());
+            polygons.add(Polygon.fromPoints(vertices));
+            vertices = new ArrayList<>();
+        }
+
+        Transform transform = new Transform();
+        transform.translate(position);
+        transform.rot(rotation);
+
+        csgModel = CSG.fromPolygons(new PropertyStorage(),polygons).transformed(transform);
+        BoundingBox bb = getCSGBoundingBox();
+        plane = (new Cube(new Vector3(bb.getCenter().getX(),-1*(bb.getHeight()/2),bb.getCenter().getZ()),new Vector3(bb.getWidth() + 1,bb.getHeight(),bb.getDepth() + 1))).toCSG();
+    }
+
+    //Get slice below the zero plane
+    public CSG getNegativeSlice(){
+        return csgModel.intersect(plane);
+    }
+
+    //Get slice above the zero plane
+    public CSG getPositiveSlice(){
+        return csgModel.difference(plane);
+    }
+
+
+    public BoundingBox getCSGBoundingBox(){
+        return new BoundingBox(new Vector3(csgModel.getBounds().getMin()),new Vector3(csgModel.getBounds().getMax()));
     }
 
     public BoundingBox getBoundingBox(){
@@ -73,18 +197,8 @@ public class Model {
     public double getSurfaceArea(){
         float surfaceArea = 0;
         for (Triangle tri: triangles){
-            double a = getDistance(tri.getV1(),tri.getV2());
-            double b = getDistance(tri.getV2(),tri.getV3());
-            double c = getDistance(tri.getV3(),tri.getV1());
-            double s = (a + b + c) / 2;
-            surfaceArea += Math.sqrt((s*(s-a) * (s-b)*(s-c)));
+            surfaceArea += tri.getArea();
         }
         return surfaceArea;
-    }
-
-    private double getDistance(Vector3 vec1, Vector3 vec2){
-        return Math.sqrt(Math.pow(vec1.getX()-vec2.getX(), 2)
-                    + Math.pow(vec1.getY()-vec2.getY(), 2)
-                    + Math.pow(vec1.getZ()-vec2.getZ(), 2));
     }
 }

@@ -220,8 +220,8 @@ public class FloatUtilMain {
             inputModel.calculateCSG();
             Model negModel = new Model(inputModel.getNegativeSlice());
             Model translatedModel = new Model(inputModel.getCsgModel());
-            translatedModel.setMass(0.2);
-            //translatedModel.setMass(650); //100 lb model
+            //translatedModel.setMass(0.1);
+            translatedModel.setMass(750); //100 lb model
             //Model posModel = new Model(inputModel.getPositiveSlice());
 
             window.setFont("default",18);

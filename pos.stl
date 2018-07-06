@@ -1,0 +1,107 @@
+solid v3d.csg
+  facet normal -0.7071067811865477 0.7071067811865474 0.0
+    outer loop
+      vertex -1.4142135623730994 24.041630560342618 0.0
+      vertex -10.606601717798215 14.849242404917497 0.0
+      vertex -1.4142135623730994 24.041630560342618 144.0
+    endloop
+  endfacet
+  facet normal -0.7071067811865477 0.7071067811865474 0.0
+    outer loop
+      vertex -1.4142135623730994 24.041630560342618 144.0
+      vertex -10.606601717798215 14.849242404917497 0.0
+      vertex -10.606601717798215 14.849242404917497 144.0
+    endloop
+  endfacet
+  facet normal 0.7071067811865475 0.7071067811865477 0.0
+    outer loop
+      vertex 22.627416997969526 0.0 0.0
+      vertex -1.4142135623730994 24.041630560342618 0.0
+      vertex 22.627416997969526 0.0 136.00000000000003
+    endloop
+  endfacet
+  facet normal 0.7071067811865475 0.7071067811865477 0.0
+    outer loop
+      vertex 22.627416997969526 0.0 144.0
+      vertex 22.627416997969526 0.0 136.0
+      vertex -1.4142135623730994 24.041630560342618 0.0
+    endloop
+  endfacet
+  facet normal 0.7071067811865475 0.7071067811865477 0.0
+    outer loop
+      vertex 22.627416997969526 0.0 144.0
+      vertex -1.4142135623730994 24.041630560342618 0.0
+      vertex -1.4142135623730994 24.041630560342618 144.0
+    endloop
+  endfacet
+  facet normal -0.8137334712067349 -0.5812381937190965 0.0
+    outer loop
+      vertex -10.606601717798215 14.849242404917497 0.0
+      vertex 0.0 0.0 0.0
+      vertex -10.606601717798215 14.849242404917497 144.0
+    endloop
+  endfacet
+  facet normal -0.8137334712067349 -0.5812381937190965 0.0
+    outer loop
+      vertex -10.606601717798215 14.849242404917497 144.0
+      vertex 0.0 0.0 0.0
+      vertex 0.0 0.0 144.0
+    endloop
+  endfacet
+  facet normal -0.0 0.0 1.0
+    outer loop
+      vertex -10.606601717798215 14.849242404917497 144.0
+      vertex 0.0 0.0 144.0
+      vertex -1.4142135623730994 24.041630560342618 144.0
+    endloop
+  endfacet
+  facet normal -0.0 -0.0 1.0
+    outer loop
+      vertex 9.870633435338743 0.0 144.0
+      vertex -1.4142135623730994 24.041630560342618 144.0
+      vertex 0.0 0.0 144.0
+    endloop
+  endfacet
+  facet normal -0.0 -0.0 1.0
+    outer loop
+      vertex 22.627416997969526 0.0 144.0
+      vertex -1.4142135623730994 24.041630560342618 144.0
+      vertex 9.870633435338744 0.0 144.0
+    endloop
+  endfacet
+  facet normal -0.0 -0.0 -1.0
+    outer loop
+      vertex 21.02874079702603 0.0 0.0
+      vertex 0.0 0.0 0.0
+      vertex -10.606601717798215 14.849242404917497 0.0
+    endloop
+  endfacet
+  facet normal -0.0 -0.0 -1.0
+    outer loop
+      vertex 22.627416997969526 0.0 0.0
+      vertex 21.028740797026025 0.0 0.0
+      vertex -10.606601717798215 14.849242404917497 0.0
+    endloop
+  endfacet
+  facet normal -0.0 -0.0 -1.0
+    outer loop
+      vertex 22.627416997969526 0.0 0.0
+      vertex -10.606601717798215 14.849242404917497 0.0
+      vertex -1.4142135623730994 24.041630560342618 0.0
+    endloop
+  endfacet
+  facet normal -0.0 -1.0 -0.0
+    outer loop
+      vertex 1.2250736823450028E-17 0.0 144.0
+      vertex 3.540462941977051E-15 0.0 0.0
+      vertex 22.62741699796953 0.0 0.0
+    endloop
+  endfacet
+  facet normal -0.0 -1.0 -0.0
+    outer loop
+      vertex 1.2250736823450028E-17 0.0 144.0
+      vertex 22.62741699796953 0.0 0.0
+      vertex 22.627416997969526 0.0 144.0
+    endloop
+  endfacet
+endsolid v3d.csg

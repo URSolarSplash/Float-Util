@@ -1,7 +1,6 @@
-package Parser;
+package Simulation.Parser;
 
-import Model.*;
-import Simulation.FloatUtilMain;
+import Simulation.Model.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,8 +62,6 @@ public class StlParser implements ModelParser {
 
         return resultModel; }
         catch (Exception e){
-            FloatUtilMain.log("StlParser could not parse model data.");
-            FloatUtilMain.log(e.toString());
             return null;
         }
     }

@@ -1,4 +1,4 @@
-package Model;
+package Simulation.Model;
 
 import eu.mihosoft.vvecmath.Vector3d;
 import lombok.AllArgsConstructor;

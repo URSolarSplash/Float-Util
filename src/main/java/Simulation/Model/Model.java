@@ -1,19 +1,12 @@
-package Model;
+package Simulation.Model;
 
-import Simulation.FloatUtilMain;
-import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.linearmath.DefaultMotionState;
+
 import eu.mihosoft.jcsg.*;
-import eu.mihosoft.vvecmath.ModifiableVector3dImpl;
 import eu.mihosoft.vvecmath.Transform;
 import eu.mihosoft.vvecmath.Vector3d;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 

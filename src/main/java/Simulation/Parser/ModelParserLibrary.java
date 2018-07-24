@@ -1,4 +1,4 @@
-package Parser;
+package Simulation.Parser;
 
 import java.util.HashMap;
 

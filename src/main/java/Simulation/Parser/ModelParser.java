@@ -1,6 +1,5 @@
-package Parser;
-
-import Model.Model;
+package Simulation.Parser;
+import Simulation.Model.Model;
 
 import java.io.File;
 

@@ -28,8 +28,134 @@ public class FloatUtilMain {
     public static String units = "in";
 
     public static void main(String[] args) {
+        printHeader("Float-Util v1.0");
+        print("Float-Util v1.0");
+        print("a command-line utility used for the calculation of boat buoyancy, stability, and waterline.\n" +
+                "Used by the URSS team to evaluate boat hull designs for the 2019 competition year.");
+        printHeader("Initialization");
+        log("Parsing command-line parameters...");
+        int numArgs = args.length;
+        log("Found "+numArgs +" params.");
+        if (numArgs == 0){
+            log("Please specify at least one parameter.");
+            log("Consult 'float-util --help' for usage instructions.");
+            log("Short summary:");
+            log("  float-util <input file> <output file> - Outputs the PDF report to the specified file.");
+            print("\n");
+            return;
+        }
+        if (!(numArgs == 1 | numArgs == 2 | numArgs == 3)){
+            log("Too many command-line parameters!");
+            log("Consult 'float-util --help' for usage instructions.");
+            print("\n");
+            return;
+        }
+
+        File inputFile;
+        File outputFile;
+        ModelParserLibrary modelParserLibrary;
+        ModelParser parser;
+        String fileType;
+
+        try {
+            inputFile = new File(args[0]);
+            if(inputFile.exists() && !inputFile.isDirectory()) {
+                log("Input file: "+inputFile.getPath());
+                fileType = FilenameUtils.getExtension(inputFile.getPath());
+
+                log("Initializing model parser library...");
+                modelParserLibrary = new ModelParserLibrary();
+                log("Retrieving model parser instance for file type '"+fileType+"'...");
+                parser = modelParserLibrary.getParser(fileType);
+                if (parser == null){
+
+                    log("Error: No parser implemented for file type '"+fileType+"'!");
+                    log("Parser available are: ");
+                    for (String parserKey : modelParserLibrary.parsers.keySet()){
+                        log(" - "+parserKey);
+                    }
+                    print("\n");
+                    return;
+                } else {
+                    log("Found parser: "+parser);
+                }
+            } else {
+                throw new IOException("Input file doesn't exist or is a directory.");
+            }
+
+            String outputFilename = "";
+            if (numArgs == 1){
+                outputFilename = inputFile.getPath().substring(0,inputFile.getPath().length() - fileType.length());
+                outputFilename += "pdf";
+                log("Generating output file from input filename...");
+            } else {
+                outputFilename = args[1];
+                if (!FilenameUtils.getExtension(outputFilename).equals("pdf")){
+                    log("Error: Output file must end in .pdf!");
+                    print("\n");
+                    return;
+                }
+            }
+            outputFile = new File(outputFilename);
+            log("Output file: "+outputFilename);
+
+        } catch (IOException e){
+            log("Input file is invalid or doesn't exist!");
+            print("\n");
+            return;
+        }
+
+        if (numArgs == 3){
+            units = args[3];
+            log("Units specified as "+units+"!");
+        } else {
+            log("Using default units ("+units+")!");
+        }
+
+        printHeader("IO Summary");
+        log("INPUT FILE: "+inputFile.getPath());
+        log("OUTPUT FILE: "+outputFile.getPath());
+        log("--- Loading File ----");
+        log("Loading model file...");
+        Model inputModel = parser.parse(inputFile);
+
+        if (inputModel == null){
+            log("Error: Failed to load model!");
+            print("\n");
+            return;
+
+        }
 
 
+        log("Loaded model. Model basic statistics:");
+        log("- Num triangles: "+inputModel.getTriangles().size());
+        log("- Num vertices: "+inputModel.getVertices().size());
+
+        printHeader("Simulation Setup");
+        if (inputModel.getTriangles().size() == 0){
+            log("Warning: Your model has 0 triangles!");
+            log("Note: Model must be in ASCII STL format.");
+            log("No calculation will be performed.");
+            print("\n");
+            return;
+        }
+        BoundingBox modelSize = inputModel.getBoundingBox();
+        log("- Model width: "+modelSize.getWidth()+" "+units);
+        log("- Model height: "+modelSize.getHeight()+" "+units);
+        log("- Model depth: "+modelSize.getDepth()+" "+units);
+        log("- Model volume: "+ inputModel.getVolume()+" "+units+"^3");
+        log("- Model surface area: "+ inputModel.getSurfaceArea()+" "+units+"^2");
+        log("--- Generating CSG Mesh ----");
+        log("Generating...");
+        inputModel.calculateCSG();
+        log("Done.");
+
+
+        log("- CSG model num triangles: "+inputModel.getCsgModel().getPolygons().size());
+        log("- CSG model num vertices: "+inputModel.getCsgModel().getPolygons().size()*3);
+        log("- CSG model width: "+modelSize.getWidth()+" "+units);
+        log("- CSG model height: "+modelSize.getHeight()+" "+units);
+        log("- CSG model depth: "+modelSize.getDepth()+" "+units);
 
 
         log("Test --- getting positive and negative slice and saving...");
@@ -81,7 +207,6 @@ public class FloatUtilMain {
         double modelY = 0;
         double waterDensityLbInCubed = 0.036;
 
-        double testBouyancy = 0.0260416667;
 
         angle = 45;
 
@@ -94,8 +219,8 @@ public class FloatUtilMain {
             inputModel.calculateCSG();
             Model negModel = new Model(inputModel.getNegativeSlice());
             Model translatedModel = new Model(inputModel.getCsgModel());
-            //translatedModel.setMass(0.1);
-            translatedModel.setMass(750); //100 lb model
+            translatedModel.setMass(0.2);
+            //translatedModel.setMass(650); //100 lb model
             //Model posModel = new Model(inputModel.getPositiveSlice());
 
             window.setFont("default",18);
@@ -126,16 +251,9 @@ public class FloatUtilMain {
             //draw waterline
             window.drawLine((objectWidth*-2 * scale) + offsetX,(0 * scale) + offsetY,(objectWidth*2 * scale) + offsetX,(0 * scale) + offsetY,window.cyan);
 
-            //Get center of gravity for both sections
-            // Use a test for now
-            testCenterY+=glfwGetKey(window.window, GLFW.GLFW_KEY_UP)*0.001 - glfwGetKey(window.window, GLFW.GLFW_KEY_DOWN)*0.001;
-            testCenterX+=-glfwGetKey(window.window, GLFW.GLFW_KEY_LEFT)*0.1 + glfwGetKey(window.window, GLFW.GLFW_KEY_RIGHT)*0.1;
-
             //Vector3 cogModel = scalePosition(new Vector3(testCenterX,testCenterY,0));
             Vector3 cogModel = scalePosition(translatedModel.getCenterOfMass());
-            cogModel.setX(cogModel.getX()+ testCenterX*scale);
             Vector3 cogNegModel = scalePosition(negModel.getCenterOfMass());
-
 
             double positiveForce = waterMass;
             double negativeForce = -translatedModel.getMass();
@@ -155,7 +273,6 @@ public class FloatUtilMain {
             double angleOffset = 0;//-glfwGetKey(window.window, GLFW.GLFW_KEY_LEFT) + glfwGetKey(window.window, GLFW.GLFW_KEY_RIGHT);
             angle+=rightingMoment*0.01 + 0.0001 + angleOffset;
             modelY+=bouyancyForce*0.01;
-            testBouyancy = testCenterY;
 
             drawBoundingBox(inputModel.getCSGBoundingBox(),new RGBA(255,255,255,50));
             drawBoundingBox(negModel.getBoundingBox(),new RGBA(255,255,255,50));

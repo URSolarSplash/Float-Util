@@ -1,0 +1,9 @@
+{
+  "model": "unstable.stl",
+  "mass": 450,
+  "units":"in",
+  "minTrimAngle":0.0,
+  "maxTrimAngle":0.0,
+  "minHeelAngle":0.0,
+  "maxHeelAngle":180.0
+}

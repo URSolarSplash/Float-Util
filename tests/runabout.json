@@ -1,0 +1,13 @@
+{
+  "model": "runabout.stl",
+  "mass": 450,
+  "units":"in",
+  "minTrimAngle":-45.0,
+  "maxTrimAngle":45.0,
+  "minHeelAngle":0.0,
+  "maxHeelAngle":0.0,
+  "angleStepSize":5,
+  "cogOffsetX":0.0,
+  "cogOffsetY":0.0,
+  "cogOffsetZ":0.0
+}

@@ -21,7 +21,7 @@ public class Model {
     private double density = 1;
     private double mass = 1;
 
-    public double getCalculatedMass(){
+    public double getCalculatedMass() {
         return density * getVolume();
     }
 
@@ -30,8 +30,8 @@ public class Model {
     }
 
     //Model from CSG
-    public Model(CSG in){
-        for (Polygon poly : in.getPolygons()){
+    public Model(CSG in) {
+        for (Polygon poly : in.getPolygons()) {
             if (poly.vertices.size() == 3) {
                 Vertex v1 = poly.vertices.get(0);
                 Vertex v2 = poly.vertices.get(1);
@@ -40,7 +40,7 @@ public class Model {
                 Vector3 v2v = new Vector3(v2.pos.x(), v2.pos.y(), v2.pos.z());
                 Vector3 v3v = new Vector3(v3.pos.x(), v3.pos.y(), v3.pos.z());
                 triangles.add(new Triangle(v1v, v2v, v3v));
-            } else if (poly.vertices.size() == 4){
+            } else if (poly.vertices.size() == 4) {
                 Vertex v1 = poly.vertices.get(0);
                 Vertex v2 = poly.vertices.get(1);
                 Vertex v3 = poly.vertices.get(2);
@@ -70,7 +70,7 @@ public class Model {
         }
     }
 
-    public Vector3 getCenterOfMass(){
+    public Vector3 getCenterOfMass() {
         // For now, use the average of centers of all the triangles
         //This is COG of the shell but not the actual body :(
         //to try to make it more realistic, weight by the area of the triangle
@@ -78,7 +78,7 @@ public class Model {
         Vector3 out = new Vector3();
         double totalSurfaceArea = getSurfaceArea();
 
-        for (Triangle tri : triangles){
+        for (Triangle tri : triangles) {
             // Find centroid of triangle
             double x = (tri.getV1().getX() + tri.getV2().getX() + tri.getV3().getX()) / 3;
             double y = (tri.getV1().getY() + tri.getV2().getY() + tri.getV3().getY()) / 3;
@@ -99,14 +99,14 @@ public class Model {
         return out;
     }
 
-    public void addTriangle(Triangle triangle){
+    public void addTriangle(Triangle triangle) {
         triangles.add(triangle);
     }
 
-    public void calculateCSG(){
+    public void calculateCSG() {
         List<Polygon> polygons = new ArrayList<>();
         List<Vector3d> vertices = new ArrayList<>();
-        for (Triangle tri : triangles){
+        for (Triangle tri : triangles) {
             vertices.add(tri.getV1().clone());
             vertices.add(tri.getV2().clone());
             vertices.add(tri.getV3().clone());
@@ -118,25 +118,34 @@ public class Model {
         transform.translate(position);
         transform.rot(rotation);
 
-        csgModel = CSG.fromPolygons(new PropertyStorage(),polygons).transformed(transform);
+        csgModel = CSG.fromPolygons(new PropertyStorage(), polygons).transformed(transform);
         BoundingBox bb = getCSGBoundingBox();
-        plane = (new Cube(new Vector3(bb.getCenter().getX(),-1*(bb.getHeight()/2),bb.getCenter().getZ()),new Vector3(bb.getWidth() + 1,bb.getHeight(),bb.getDepth() + 1))).toCSG();
+        plane = (new Cube(new Vector3(bb.getCenter().getX(), -1 * (bb.getHeight() / 2), bb.getCenter().getZ()), new Vector3(bb.getWidth() + 1, bb.getHeight(), bb.getDepth() + 1))).toCSG();
     }
 
     //Get slice below the zero plane
-    public CSG getNegativeSlice(){
+    public CSG getNegativeSlice() {
         return csgModel.intersect(plane);
     }
 
     //Get slice above the zero plane
-    public CSG getPositiveSlice(){
+    public CSG getPositiveSlice() {
         return csgModel.difference(plane);
     }
 
 
-    public BoundingBox getCSGBoundingBox(){
-        return new BoundingBox(new Vector3(csgModel.getBounds().getMin()),new Vector3(csgModel.getBounds().getMax()));
+    public BoundingBox getCSGBoundingBox() {
+        return new BoundingBox(new Vector3(csgModel.getBounds().getMin()), new Vector3(csgModel.getBounds().getMax()));
     }
+
+    public Vector3 getMinPoint() {
+        return new Vector3(csgModel.getBounds().getMin());
+    }
+
+    public Vector3 getMaxPoint() {
+        return new Vector3(csgModel.getBounds().getMax());
+    }
+
 
     public BoundingBox getBoundingBox(){
         // If no vertices, bounding box is 0.

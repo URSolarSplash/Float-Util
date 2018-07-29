@@ -2,8 +2,11 @@ package Utility;
 
 import Input.InputReader;
 import Input.SimulationInput;
+import Output.CSVWriter;
 import Output.SimulationOutput;
+import Output.TextWriter;
 import Simulation.Simulation;
+import UI.FloatUtilUI;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.cli.*;
@@ -134,6 +137,7 @@ public class Application {
         pb.stop();
 
         SimulationOutput simulationOutput = Simulation.run(simulationInput,inputPath);
+        (new CSVWriter()).write(simulationOutput,fullOutputPath);
 
         if (simulationOutput == null){
             out("");
@@ -146,12 +150,13 @@ public class Application {
             out("Simulation summary: ");
             out("Input file: "+inputFile);
             out("Output file: "+fullOutputPath);
-            out(simulationOutput.toString());
         }
     }
 
     public static void uiMode(CommandLine cmd){
         out("Running in UI mode...");
+        Simulation.debug = false;
+        FloatUtilUI.init();
     }
 
     public static void out(String out){

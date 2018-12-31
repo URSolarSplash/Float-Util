@@ -1,0 +1,31 @@
+{
+  "name": "urss-float-util",
+  "version": "1.0.0",
+  "description": "Float: a utility used for the calculation of boat buoyancy, stability, and waterline.",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/URSolarSplash/Float-Util.git"
+  },
+  "author": "Chris Dalke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/URSolarSplash/Float-Util/issues"
+  },
+  "homepage": "https://github.com/URSolarSplash/Float-Util#readme",
+  "devDependencies": {
+    "electron": "^3.0.11"
+  },
+  "dependencies": {
+    "chart.js": "^2.7.2",
+    "d3": "^3.5.16",
+    "electron-reload": "^1.2.5",
+    "jquery": "^3.3.1",
+    "three": "^0.99.0",
+    "tree-kill": "^1.2.1",
+    "zerorpc": "^0.9.8"
+  }
+}

@@ -3,3 +3,4 @@
 build/
 OLD_SOURCE/
 out/**
+node_modules/

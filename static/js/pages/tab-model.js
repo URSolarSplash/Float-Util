@@ -1,0 +1,214 @@
+var container, scene, camera, controls, renderer;
+var water, sky, sunSphere, sunLight;
+var model,grid,waterModel;
+var viewDistance = 2000;
+var stabilityAxisMarker, axesHelper;
+var waterMaterial = new THREE.MeshPhongMaterial( { wireframe: Application.wireframe, transparent: true, opacity: 0.5, color: 0x0000ff, specular: 0x111111, shininess: 200} );
+var material = new THREE.MeshPhongMaterial( { wireframe: Application.wireframe, color: 0xff5533, specular: 0x111111, shininess: 200, side: THREE.DoubleSide} );
+
+
+$(function(){
+    container = document.getElementById('model-view-canvas');
+
+    createScene();
+    initSky();
+
+
+    var stabilityAxisTexture = THREE.ImageUtils.loadTexture('static/img/stability-axis.png');
+    stabilityAxisMarker = new THREE.Mesh(new THREE.PlaneGeometry(2, 1), new THREE.MeshBasicMaterial({map: stabilityAxisTexture, transparent: true, side: THREE.DoubleSide}));
+    stabilityAxisMarker.position.set(0,0.5,0);
+    scene.add(stabilityAxisMarker);
+
+    axesHelper = new THREE.AxesHelper( 5 );
+
+    controls.update();
+    updateModel();
+
+    updateDisplayState();
+
+	animate();
+});
+
+function updateDisplayState(){
+    if (Application.showWater){
+        scene.add(water);
+    } else {
+        scene.remove(water);
+    }
+    if (Application.wireframe){
+        material.wireframe = true;
+        waterMaterial.wireframe = true;
+    } else {
+        material.wireframe = false;
+        waterMaterial.wireframe = false;
+    }
+    if (Application.debug){
+        scene.add(axesHelper);
+        scene.add(waterModel);
+    } else {
+        scene.remove(axesHelper);
+        scene.remove(waterModel);
+    }
+}
+
+function updateModel(geometry,waterGeometry,position){
+    scene.remove(model);
+    scene.remove(waterModel);
+    //scene.remove(stabilityAxisMarker);
+    if (Application.model != null){
+        model = new THREE.Mesh(geometry, material);
+        waterModel = new THREE.Mesh(waterGeometry, waterMaterial);
+        scene.add(model);
+        if (Application.debug){
+            scene.add(waterModel);
+        }
+
+        model.position.set(position.x,position.y,position.z);
+
+        var stabilityAxisSize = 0;
+        if (Application.stabilityAxis == 0){
+            // X
+            stabilityAxisSize = Application.sizeX*1.67;
+            stabilityAxisMarker.rotation.set(0,0,0);
+        } else {
+            // Z
+            stabilityAxisSize = Application.sizeZ*1.67;
+            stabilityAxisMarker.rotation.set(0,Math.PI/2,0);
+        }
+        stabilityAxisMarker.scale.set(stabilityAxisSize,stabilityAxisSize,stabilityAxisSize);
+        stabilityAxisMarker.position.set(0,0.5*stabilityAxisSize,0);
+
+        //model.position.set(Application.modelOffsetX,Application.modelOffsetY,Application.modelOffsetZ);
+
+        controls.minDistance = Math.max(Application.maxSize,0.1);
+        controls.maxDistance = Math.max(Application.maxSize*4,0.1);
+        scene.fog.near = Math.max(Application.maxSize,0.1);
+        scene.fog.far = viewDistance;
+        controls.update();
+    }
+
+    render();
+}
+
+function createScene(){
+    scene = new THREE.Scene();
+	camera = new THREE.PerspectiveCamera( 75, $(container).width()/$(container).height(), 0.01,viewDistance );
+
+
+	renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer.setSize($(container).width(),$(container).height(),false);
+	container.appendChild(renderer.domElement);
+
+    $(container).resize(function(){
+        console.log("resized");
+    });
+
+    grid = new THREE.GridHelper(10, 10, 0xffffff, 0xffffff );
+	//scene.add( grid );
+    grid.position.set(0,-0.01,0);
+
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	controls.maxPolarAngle = Math.PI / 2.2;
+	controls.enableZoom = true;
+	controls.enablePan = false;
+    controls.minDistance = 1;
+    controls.maxDistance = 10;
+
+	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+	var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+	model = new THREE.Mesh( geometry, material );
+	scene.add( model );
+
+	camera.position.z = 5;
+}
+
+function animate() {
+	requestAnimationFrame(animate);
+	render();
+}
+
+function render() {
+	var time = performance.now() * 0.001;
+	water.material.uniforms.time.value += 1.0 / 60.0;
+	renderer.render( scene, camera );
+}
+
+
+$(window).resize(function(){
+    camera.aspect = $(container).width()/$(container).height();
+    camera.updateProjectionMatrix();
+	renderer.setSize($(container).width(),$(container).height(),false);
+});
+
+function initSky() {
+	// Add Sky
+	sky = new THREE.Sky();
+	sky.scale.setScalar( viewDistance);
+	scene.add(sky);
+
+    sunSphere = new THREE.Mesh(
+					new THREE.SphereBufferGeometry( 20000, 16, 8 ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff } )
+				);
+	sunSphere.position.y = - 700000;
+	sunSphere.visible = false;
+	scene.add( sunSphere );
+
+    fogColor = new THREE.Color(0xCAD7DB);
+    scene.background = fogColor;
+    scene.fog = new THREE.Fog(fogColor, 0.0025, 200);
+
+    scene.add( new THREE.HemisphereLight(0xdddddd,0xdddddd));
+    sunLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    sunLight.position.set(100,100,0);
+    scene.add(sunLight);
+
+	var effectController  = {
+		turbidity: 5,
+		rayleigh: 1,
+		mieCoefficient: 0.005,
+		mieDirectionalG: 0.8,
+		luminance: 1,
+		inclination: 0, // elevation / inclination
+		azimuth: 0.15, // Facing front,
+		sun: ! true
+	};
+	var distance = 400000;
+
+	var uniforms = sky.material.uniforms;
+	uniforms.turbidity.value = effectController.turbidity;
+	uniforms.rayleigh.value = effectController.rayleigh;
+	uniforms.luminance.value = effectController.luminance;
+	uniforms.mieCoefficient.value = effectController.mieCoefficient;
+	uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+	var theta = Math.PI * ( effectController.inclination - 0.5 );
+	var phi = 2 * Math.PI * ( effectController.azimuth - 0.5 );
+	sunSphere.position.x = distance * Math.cos( phi );
+	sunSphere.position.y = distance * Math.sin( phi ) * Math.sin( theta );
+	sunSphere.position.z = distance * Math.sin( phi ) * Math.cos( theta );
+    sunLight.position.set(sunSphere.position.x,sunSphere.position.y,sunSphere.position.z);
+	sunSphere.visible = effectController.sun;
+	uniforms.sunPosition.value.copy( sunSphere.position );
+
+	var waterGeometry = new THREE.PlaneBufferGeometry( viewDistance, viewDistance );
+    water = new THREE.Water(
+		waterGeometry,
+		{
+			textureWidth: 512,
+			textureHeight: 512,
+			waterNormals: new THREE.TextureLoader().load( 'static/img/water-normals.jpg', function ( texture ) {
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+			} ),
+			alpha: 0.5,
+			sunDirection: sunLight.position.clone().normalize(),
+			sunColor: 0xffffff,
+			waterColor: 0x001e0f,
+			distortionScale: 0.2,
+			fog: scene.fog !== undefined
+		}
+	);
+    water.material.uniforms.size.value = 20;
+	water.rotation.x = - Math.PI / 2;
+
+	scene.add(water);
+}

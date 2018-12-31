@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Page Metadata -->
+        <meta charset="UTF-8">
+        <title>URSS Float Utility</title>
+
+        <!-- Load CSS Files -->
+        <link rel="stylesheet" type="text/css" href="static/css/main.css">
+        <link rel="stylesheet" type="text/css" href="static/css/lib/epoch.min.css">
+        <link rel="stylesheet" type="text/css" href="static/css/tab-charts.css">
+        <link rel="stylesheet" type="text/css" href="static/css/tab-results.css">
+        <link rel="stylesheet" type="text/css" href="static/css/tab-model.css">
+
+        <!-- Load JS Libraries -->
+        <script>window.$ = window.jQuery = require('jquery');</script>
+        <script>var d3 = require('d3');</script>
+        <script>var moment = require('moment');</script>
+        <script>var THREE = require('three');</script>
+        <script src="static/js/logger.js"></script>
+        <script src="static/js/lib/three/OrbitControls.js"></script>
+        <script src="static/js/lib/three/Water.js"></script>
+        <script src="static/js/lib/three/Sky.js"></script>
+        <script src="static/js/lib/three/STLLoader.js"></script>
+        <script src="static/js/lib/charts/Chart.bundle.js"></script>
+        <script src="static/js/lib/csg.js"></script>
+        <script src="static/js/lib/three/CalculationUtils.js"></script>
+        <script src="static/js/lib/ThreeCSG.js"></script>
+        <script src="static/js/tabs.js" type="text/javascript"></script>
+        <script src="static/js/modal.js" type="text/javascript"></script>
+
+        <!-- Load JS Page Files -->
+        <script src="static/js/ApplicationManager.js" type="text/javascript"></script>
+        <script src="static/js/index.js" type="text/javascript"></script>
+        <script src="static/js/pages/tab-charts.js" type="text/javascript"></script>
+        <script src="static/js/pages/tab-results.js" type="text/javascript"></script>
+        <script src="static/js/pages/tab-model.js" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <!-- Modal overlay; used to display simple modal messages. -->
+        <div id="modal-overlay">
+            <div id="modal-window">
+                <h1 id="modal-title">Message Title</h1>
+                <hr>
+                <p id="modal-body">Message Body</p>
+            </div>
+        </div>
+
+        <div id="urss-header-avatar"></div>
+
+        <div id="top-panel">
+            <div class="panel">
+                <div id="displayOptions" class="button">Display Options</div>
+            </div>
+        </div>
+
+
+        <div id="side-panel">
+            <div class="panel">
+                <!--
+                <h3 style="margin-bottom: 10px; text-align: center;">Simulation Settings</h3>
+            -->
+                <div class="status-pane">
+                    <div class="status-bar-toggle"></div>
+                    <h1>Model Import Settings</h1>
+                    <p>Model File:</p>
+
+                    <input type="file"
+                       id="model-filename" name="filename"
+                       accept=".stl">
+                     <p>Model Units:</p>
+
+                     <select id="model-units">
+                      <option value="0.00328084">mm</option>
+                      <option value="3.28084">m</option>
+                      <option value="1">ft</option>
+                      <option value="0.0833333">in</option>
+                    </select>
+                    <p>Model Rotation (deg):</p>
+                    <input id="model-rot-x" class="coords-x" type="number" class="coords-x" value="0"/>
+                    <input id="model-rot-y" class="coords-y" type="number" class="coords-y" value="0"/>
+                    <input id="model-rot-z" class="coords-z" type="number" class="coords-z" value="0"/>
+
+                </div>
+                <div class="status-pane">
+                    <div class="status-bar-toggle"></div>
+                    <h1>Model Physical Properties</h1>
+                    <p>Weight (lbs):</p>
+                    <input id="model-weight" type="number" value="0"/>
+                    <p>Center of Mass (Model Coordinates):</p>
+                    <input id="model-cog-x" class="coords-x" type="number" value="0"/>
+                    <input id="model-cog-y" class="coords-y" type="number" value="0"/>
+                    <input id="model-cog-z" class="coords-z" type="number" value="0"/>
+                </div>
+                <div class="status-pane">
+                    <div class="status-bar-toggle"></div>
+                    <h1>Simulation Settings</h1>
+                    <p>Stability Axis:</p>
+                     <select id="model-stability-axis">
+                      <option value="x">X Axis</option>
+                      <option value="z">Z Axis</option>
+                    </select>
+                    <p>Fluid Density (lb/ft^3):</p>
+                    <input id="fluid-density" type="number" value="62.42796"/>
+                </div>
+            </div>
+        </div>
+
+        <div id="update-panel" class="button update-panel-ready">Update Results
+        </div>
+
+        <div id="tab-panel">
+            <div id="model-tab" class="tab tab-active">Model View</div>
+            <div id="results-tab" class="tab tab-inactive">Results</div>
+            <div id="stability-tab" class="tab tab-inactive">Stability</div>
+            <div id="waterline-tab" class="tab tab-inactive">Waterline</div>
+        </div>
+
+        <div id="main-panel">
+            <div class="panel">
+                <div id="model-tab-pane" class="tab-pane">
+                    <div id="model-view-canvas">
+                    </div>
+                </div>
+                <div id="results-tab-pane" class="tab-pane">
+                    <h2>Results Summary</h2>
+                    <div id="results">
+                    </div>
+                </div>
+                <div id="stability-tab-pane" class="tab-pane">
+                    <h2>Stability Charts</h2>
+                </div>
+                <div id="waterline-tab-pane" class="tab-pane">
+                    <h2>Waterline</h2>
+                </div>
+            </div>
+        </div>
+
+        <div id="bottom-panel">
+            <div class="panel">
+                <p class="status-bar-item" id="status-message-file">Status: No File Loaded</p>
+            </div>
+        </div>
+    </body>
+</html>

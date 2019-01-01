@@ -1,4 +1,4 @@
-const {app, process, BrowserWindow} = require('electron')
+const {app, process, ipcMain, BrowserWindow} = require('electron')
 require('electron-reload')(__dirname);
 var Chart = require('chart.js');
 
@@ -17,7 +17,7 @@ function createMainWindow () {
 
 // Create the background browser window. This is used to run mesh floatation simulations.
 function createBackgroundWindow () {
-    backgroundWindow = new BrowserWindow({width: 100, height: 100, show: true})
+    backgroundWindow = new BrowserWindow({width: 100, height: 100, show: false})
     backgroundWindow.loadFile('background.html')
     backgroundWindow.on('closed', () => {
       backgroundWindow = null
@@ -40,3 +40,9 @@ app.on('activate-with-no-open-windows', () => {
 app.on('before-quit', function(){
     console.log("Quitting...");
 });
+
+ipcMain.on('simulation-start', (event, payload) => backgroundWindow.webContents.send('simulation-start', payload));
+ipcMain.on('simulation-cancel', (event, payload) => backgroundWindow.webContents.send('simulation-cancel', payload));
+ipcMain.on('simulation-update-progress', (event, payload) => mainWindow.webContents.send('simulation-update-progress', payload));
+ipcMain.on('simulation-success', (event, payload) => mainWindow.webContents.send('simulation-success', payload));
+ipcMain.on('simulation-failure', (event, payload) => mainWindow.webContents.send('simulation-failure', payload));

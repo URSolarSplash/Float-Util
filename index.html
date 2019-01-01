@@ -57,54 +57,53 @@
 
 
         <div id="side-panel">
+            <form id="model-properties">
             <div class="panel">
-                <!--
-                <h3 style="margin-bottom: 10px; text-align: center;">Simulation Settings</h3>
-            -->
                 <div class="status-pane">
                     <div class="status-bar-toggle"></div>
                     <h1>Model Import Settings</h1>
                     <p>Model File:</p>
 
-                    <input type="file"
+                    <input class="model-property" type="file"
                        id="model-filename" name="filename"
                        accept=".stl">
                      <p>Model Units:</p>
 
-                     <select id="model-units">
+                     <select class="model-property" id="model-units">
                       <option value="0.00328084">mm</option>
                       <option value="3.28084">m</option>
-                      <option value="1">ft</option>
+                      <option selected="selected" value="1">ft</option>
                       <option value="0.0833333">in</option>
                     </select>
                     <p>Model Rotation (deg):</p>
-                    <input id="model-rot-x" class="coords-x" type="number" class="coords-x" value="0"/>
-                    <input id="model-rot-y" class="coords-y" type="number" class="coords-y" value="0"/>
-                    <input id="model-rot-z" class="coords-z" type="number" class="coords-z" value="0"/>
+                    <input id="model-rot-x" class="model-property coords-x" type="number" class="coords-x" value="0"/>
+                    <input id="model-rot-y" class="model-property coords-y" type="number" class="coords-y" value="0"/>
+                    <input id="model-rot-z" class="model-property coords-z" type="number" class="coords-z" value="0"/>
 
                 </div>
                 <div class="status-pane">
                     <div class="status-bar-toggle"></div>
                     <h1>Model Physical Properties</h1>
                     <p>Weight (lbs):</p>
-                    <input id="model-weight" type="number" value="0"/>
+                    <input id="model-weight" class="model-property" type="number" value="0"/>
                     <p>Center of Mass (Model Coordinates):</p>
-                    <input id="model-cog-x" class="coords-x" type="number" value="0"/>
-                    <input id="model-cog-y" class="coords-y" type="number" value="0"/>
-                    <input id="model-cog-z" class="coords-z" type="number" value="0"/>
+                    <input id="model-cog-x" class="model-property coords-x" type="number" value="0"/>
+                    <input id="model-cog-y" class="model-property coords-y" type="number" value="0"/>
+                    <input id="model-cog-z" class="model-property coords-z" type="number" value="0"/>
                 </div>
                 <div class="status-pane">
                     <div class="status-bar-toggle"></div>
                     <h1>Simulation Settings</h1>
                     <p>Stability Axis:</p>
-                     <select id="model-stability-axis">
+                     <select class="model-property" id="model-stability-axis">
                       <option value="x">X Axis</option>
                       <option value="z">Z Axis</option>
                     </select>
                     <p>Fluid Density (lb/ft^3):</p>
-                    <input id="fluid-density" type="number" value="62.42796"/>
+                    <input class="model-property" id="fluid-density" type="number" value="62.42796"/>
                 </div>
             </div>
+            </form>
         </div>
 
         <div id="update-panel" class="button update-panel-ready">Update Results
@@ -120,6 +119,9 @@
         <div id="main-panel">
             <div class="panel">
                 <div id="model-tab-pane" class="tab-pane">
+                    <div id="model-zoom-in">+</div>
+                    <div id="model-zoom-out">-</div>
+                    <div id="model-axes"></div>
                     <div id="model-view-canvas">
                     </div>
                 </div>

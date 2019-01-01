@@ -128,6 +128,7 @@ THREE.Sky.SkyShader = {
 		'uniform float mieDirectionalG;',
 
 		'const vec3 cameraPos = vec3( 0.0, 0.0, 0.0 );',
+        'const vec3 waterColor = vec3(0.278,0.4509,0.6392);',
 
 		// constants for atmospheric scattering
 		'const float pi = 3.141592653589793238462643383279502884197169;',
@@ -176,7 +177,8 @@ THREE.Sky.SkyShader = {
 		'void main() {',
 		// optical length
 		// cutoff angle at 90 to avoid singularity in next formula.
-		'	float zenithAngle = acos( max( 0.0, dot( up, normalize( vWorldPosition - cameraPos ) ) ) );',
+		'	float zenithAngle = acos( max(0.0,dot( up, normalize( vWorldPosition - cameraPos ) ) ) );',
+        '   float positiveCutoff = step( -0.01, dot( up, normalize( vWorldPosition - cameraPos ) ) );',
 		'	float inverse = 1.0 / ( cos( zenithAngle ) + 0.15 * pow( 93.885 - ( ( zenithAngle * 180.0 ) / pi ), -1.253 ) );',
 		'	float sR = rayleighZenithLength * inverse;',
 		'	float sM = mieZenithLength * inverse;',
@@ -213,8 +215,10 @@ THREE.Sky.SkyShader = {
 		'	vec3 color = curr * whiteScale;',
 
 		'	vec3 retColor = pow( color, vec3( 1.0 / ( 1.2 + ( 1.2 * vSunfade ) ) ) );',
+        '   retColor *= positiveCutoff;',
+        '   retColor += (waterColor * (1.0 - positiveCutoff));',
 
-		'	gl_FragColor = vec4( retColor, 1.0 );',
+		'	gl_FragColor = vec4(retColor, 1.0 );',
 
 		'}'
 	].join( '\n' )

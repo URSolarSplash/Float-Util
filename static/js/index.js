@@ -3,11 +3,6 @@
 // Handles all page mechanics.
 //////////////////////////////////////////////////////////
 
-// Create an instance of the application state
-var Application = new ApplicationState();
-
-logger.log("[Main Thread] Application state object initialized.");
-
 // On page initialization
 $(function(){
 
@@ -19,31 +14,32 @@ $(function(){
         <input type="checkbox" id="wireframe" name="wireframe" value="wireframe">
         <label for="wireframe">Wireframe</label><br>
         <input type="checkbox" id="debug" name="debug" value="debug">
-        <label for="debug">Debug Mode</label><br>
-
-        <br>
+        <label for="debug">Debug Mode</label>
         `);
-        $('#display-water').prop('checked',Application.showWater);
-        $('#wireframe').prop('checked',Application.wireframe);
-        $('#debug').prop('checked',Application.debug);
+        $('#display-water').prop('checked',Application.displayWater);
+        $('#wireframe').prop('checked',Application.displayWireframe);
+        $('#debug').prop('checked',Application.displayDebug);
 
         $("#display-water").change(function(){
-            Application.showWater = $(this).is(':checked');
+            Application.displayWater = $(this).is(':checked');
             updateDisplayState();
         });
         $("#wireframe").change(function(){
-            Application.wireframe = $(this).is(':checked');
+            Application.displayWireframe = $(this).is(':checked');
             updateDisplayState();
         });
         $("#debug").change(function(){
-            Application.debug = $(this).is(':checked');
+            Application.displayDebug = $(this).is(':checked');
             updateDisplayState();
         });
     });
 
-    $("#update-panel").click(function(){
-        Application.update();
+    $("#model-properties").change(function(){
+        console.log("Updating simulation preview...");
+        Application.startUpdate(false);
     });
+
+    setUpdateButtonReadyState();
 
     // Set up sidebar panel toggling
     $(".status-bar-toggle").text("hide");
@@ -57,6 +53,28 @@ $(function(){
         }
     });
 });
+
+function setUpdateButtonProgressState(progress){
+    $("#update-panel").text("Updating, "+ progress+"...");
+    $("#update-panel").removeClass("update-panel-ready");
+    $("#update-panel").off();
+    /*
+    $("#update-panel").click(function(){
+        $("#update-panel").text("Cancelling...");
+        Application.cancelUpdate();
+    });*/
+}
+
+function setUpdateButtonReadyState(){
+    $("#update-panel").text("Update Results");
+    $("#update-panel").addClass("update-panel-ready");
+    $("#update-panel").off();
+    $("#update-panel").click(function(){
+        setTimeout(function(){
+            Application.startUpdate(true);
+        },0);
+    });
+}
 
 //////////////////////////////////////////////////////////
 // End of File

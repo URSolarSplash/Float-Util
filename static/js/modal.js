@@ -12,7 +12,7 @@ $(function(){
 // Shows a modal with the provided title and message.
 function showModal(title,message){
     $("#modal-title").text(title);
-    var footer = `
+    var footer = `<br><br>
     <hr>
     <div id="closeModal" class="button">Close</div>
     `;

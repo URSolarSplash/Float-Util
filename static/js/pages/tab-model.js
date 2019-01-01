@@ -5,11 +5,35 @@ var viewDistance = 2000;
 var stabilityAxisMarker, axesHelper;
 var waterMaterial = new THREE.MeshPhongMaterial( { wireframe: Application.wireframe, transparent: true, opacity: 0.5, color: 0x0000ff, specular: 0x111111, shininess: 200} );
 var material = new THREE.MeshPhongMaterial( { wireframe: Application.wireframe, color: 0xff5533, specular: 0x111111, shininess: 200, side: THREE.DoubleSide} );
+var position = {x:0, y:0, z:0};
+var axes = [];
+var axesContainer,axesScene,axesCamera,axesRenderer;
 
+function setupAxes(){
+    axesContainer = document.getElementById('model-axes');
+    axesScene = new THREE.Scene();
+    var range = 0.6;
+	axesCamera = new THREE.OrthographicCamera(-range,range,range,-range,0.01,100);
+	axesRenderer = new THREE.WebGLRenderer({antialias: false, alpha: true});
+	axesRenderer.setSize($(axesContainer).width(),$(axesContainer).height(),false);
+	axesContainer.appendChild(axesRenderer.domElement);
+    for (var x = 0; x < 3; x++){
+        for (var y = 0; y < 3; y++){
+            for (var z = 0; z < 3; z++){
+                var axe = new THREE.AxesHelper(0.5);
+                var offset = 0.02;
+                axe.position.set(x*offset - 0.2,y*offset - 0.2,z*offset - 0.2);
+                axes.push(axe);
+                axesScene.add(axe);
+            }
+        }
+    }
+}
 
 $(function(){
     container = document.getElementById('model-view-canvas');
 
+    setupAxes();
     createScene();
     initSky();
 
@@ -22,51 +46,65 @@ $(function(){
     axesHelper = new THREE.AxesHelper( 5 );
 
     controls.update();
-    updateModel();
+    setModel(null);
 
     updateDisplayState();
+
+    $("#model-zoom-in").click(function(){
+
+    });
+    $("#model-zoom-out").click(function(){
+
+    });
+    $("#model-axes").click(function(){
+        // Reset camera to default view position
+        resetCamera();
+    });
 
 	animate();
 });
 
+function resetCamera(){
+    // Set camera rotation and position to a nice position I chose
+    camera.position.set(3.321969174566935,1.9924758415577541,3.321969174566935);
+
+    // Set camera position to fit model size
+    camera.position.normalize();
+    camera.position.multiplyScalar((controls.minDistance + controls.maxDistance)/2);
+    controls.update();
+}
+
 function updateDisplayState(){
-    if (Application.showWater){
+    if (Application.displayWater){
         scene.add(water);
     } else {
         scene.remove(water);
     }
-    if (Application.wireframe){
+    if (Application.displayWireframe){
         material.wireframe = true;
         waterMaterial.wireframe = true;
     } else {
         material.wireframe = false;
         waterMaterial.wireframe = false;
     }
-    if (Application.debug){
+    if (Application.displayDebug){
         scene.add(axesHelper);
-        scene.add(waterModel);
+        //scene.add(waterModel);
     } else {
         scene.remove(axesHelper);
-        scene.remove(waterModel);
+        //scene.remove(waterModel);
     }
 }
 
-function updateModel(geometry,waterGeometry,position){
+function setModel(modelGeometry){
     scene.remove(model);
-    scene.remove(waterModel);
-    //scene.remove(stabilityAxisMarker);
-    if (Application.model != null){
-        model = new THREE.Mesh(geometry, material);
-        waterModel = new THREE.Mesh(waterGeometry, waterMaterial);
+    if (modelGeometry != null){
+        model = new THREE.Mesh(modelGeometry, material);
         scene.add(model);
-        if (Application.debug){
-            scene.add(waterModel);
-        }
-
         model.position.set(position.x,position.y,position.z);
 
         var stabilityAxisSize = 0;
-        if (Application.stabilityAxis == 0){
+        if (Application.simulationStabilityAxis == 0){
             // X
             stabilityAxisSize = Application.sizeX*1.67;
             stabilityAxisMarker.rotation.set(0,0,0);
@@ -78,15 +116,21 @@ function updateModel(geometry,waterGeometry,position){
         stabilityAxisMarker.scale.set(stabilityAxisSize,stabilityAxisSize,stabilityAxisSize);
         stabilityAxisMarker.position.set(0,0.5*stabilityAxisSize,0);
 
-        //model.position.set(Application.modelOffsetX,Application.modelOffsetY,Application.modelOffsetZ);
-
         controls.minDistance = Math.max(Application.maxSize,0.1);
         controls.maxDistance = Math.max(Application.maxSize*4,0.1);
         scene.fog.near = Math.max(Application.maxSize,0.1);
         scene.fog.far = viewDistance;
         controls.update();
     }
+    //resetCamera();
+    render();
+}
 
+function setModelPosition(pos){
+    position.x = pos.x;
+    position.y = pos.y;
+    position.z = pos.z;
+    model.position.set(position.x,position.y,position.z);
     render();
 }
 
@@ -131,6 +175,12 @@ function render() {
 	var time = performance.now() * 0.001;
 	water.material.uniforms.time.value += 1.0 / 60.0;
 	renderer.render( scene, camera );
+
+    // Copy main camera angle and position to axes camera
+    axesCamera.position.set(camera.position.x,camera.position.y,camera.position.z);
+    axesCamera.lookAt(0,0,0);
+    axesCamera.position.normalize();
+    axesRenderer.render(axesScene,axesCamera);
 }
 
 
@@ -199,7 +249,7 @@ function initSky() {
 			waterNormals: new THREE.TextureLoader().load( 'static/img/water-normals.jpg', function ( texture ) {
 				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 			} ),
-			alpha: 0.5,
+			alpha: 0.75,
 			sunDirection: sunLight.position.clone().normalize(),
 			sunColor: 0xffffff,
 			waterColor: 0x001e0f,

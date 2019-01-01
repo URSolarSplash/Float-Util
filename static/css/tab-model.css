@@ -20,3 +20,57 @@
     cursor : -moz-grab;
     cursor : -webkit-grab;
 }
+
+#model-zoom-in {
+    background-color: black;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    right: 5px;
+    top: 60px;
+    z-index: 10;
+    background: #323232;
+    font-size:24px;
+    padding: 0px;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: .8;
+}
+
+
+#model-zoom-out {
+    background-color: black;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    right: 5px;
+    top: 95px;
+    z-index: 10;
+    background: #323232;
+    font-size:24px;
+    padding: 0px;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: .8;
+}
+
+#model-axes {
+    opacity: .8;
+    background: #323232;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 50px;
+    height: 50px;
+    z-index: 10;
+    cursor: pointer;
+}
+#model-axes * {
+    cursor: pointer;
+}

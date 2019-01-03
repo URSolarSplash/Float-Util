@@ -36,7 +36,7 @@ $(function(){
 
                     console.log(geometry);
 
-                    // Convert BufferedGeometry to raw Geometry object suitable for CSG operations.
+                    // Convert BufferedGeometry to raw Geometry object suitable for simulation operations.
                     payload.geometry = new THREE.Geometry();
                     payload.geometry.fromBufferGeometry(geometry);
                     payload.geometry.mergeVertices();
@@ -78,29 +78,23 @@ function checkCancel(){
 function simulate(input){
     var output = {};
 
-    // Save geometry to output object.
-    output.geometry = input.geometry;
-
     // Apply the scaling and rotation options to the geometry.
     // This is a one-time operation; the results are baked into geometry vertex positions.
-    output.geometry.scale(input.modelScaleFactor,input.modelScaleFactor,input.modelScaleFactor);
-    output.geometry.rotateX(input.modelRotationX * (Math.PI/180));
-    output.geometry.rotateY(input.modelRotationY * (Math.PI/180));
-    output.geometry.rotateZ(input.modelRotationZ * (Math.PI/180));
-    output.geometry.computeBoundingBox();
+    input.geometry.scale(input.modelScaleFactor,input.modelScaleFactor,input.modelScaleFactor);
+    input.geometry.rotateX(input.modelRotationX * (Math.PI/180));
+    input.geometry.rotateY(input.modelRotationY * (Math.PI/180));
+    input.geometry.rotateZ(input.modelRotationZ * (Math.PI/180));
+    input.geometry.computeBoundingBox();
 
-    output.geometry.translate(input.initialModelOffsetX,input.initialModelOffsetY,input.initialModelOffsetZ);
-    output.geometry.computeBoundingBox();
-
-    // Create water volume with a size large enough to accommodate any hull movements.
-    output.waterGeometry = new THREE.BoxGeometry(input.waterSizeX,input.waterSizeY,input.waterSizeZ);
-    output.waterGeometry.translate(0,-input.waterSizeY/2,0);
-    var waterCsg = THREE.CSG.toCSG(output.waterGeometry);
+    input.geometry.translate(input.initialModelOffsetX,input.initialModelOffsetY,input.initialModelOffsetZ);
+    input.geometry.computeBoundingBox();
 
     // Perform waterline calculation loop
-    output.fullVolume = calculateVolume(output.geometry);
+    var initialVolumeCOG = calculateVolumeCenterOfMass(input.geometry,false,false);
+
+    output.fullVolume = initialVolumeCOG.volume;
     console.log("Calculated volume: "+output.fullVolume);
-    var currentGeometry = output.geometry.clone();
+    var currentGeometry = input.geometry.clone();
 
     // Check if the weight exceeds full volume mass, indicating the model will sink.
     output.willSink = ((output.fullVolume * input.simulationFluidDensity) < input.modelWeight);
@@ -109,6 +103,10 @@ function simulate(input){
     output.position.x = 0;
     output.position.y = 0;
     output.position.z = 0;
+    output.rotation = {};
+    output.rotation.x = 0;
+    output.rotation.y = 0;
+    output.rotation.z = 0;
     var logString = "";
 
     output.iteration = 0;
@@ -118,26 +116,43 @@ function simulate(input){
         return;
     }
 
+    if (input.modelWeight == 0){
+        sendErrorPacket("Model simulation terminated: model has no weight! <br>Please set a weight to continue.");
+        return;
+    }
+
+    console.log("STARTING SIMULATION");
     var floatDelta = 1000;
     var progressMetric = 0;
     var simulationSpeed = 1;
     var debounce = false;
-    while (Math.abs(floatDelta) > 0.001){
+    var oldPosition = {x:0, y:0, z:0};
+    var simulationDone = false;
+    while (!simulationDone){
         //if (checkCancel()){ return; }
         output.iteration++;
+        //console.log("STARTING ITERATION "+output.iteration);
+        if (output.iteration > 2){
+            //break;
+        }
 
         var iterationSummary = {};
         iterationSummary.iteration = output.iteration;
 
-        // Convert geometry to CSG model.
-        var geometryCsg = THREE.CSG.toCSG(currentGeometry);
-
-        // Get volume of below-water portion of object.
-        var belowWaterCsg = geometryCsg.intersect(waterCsg);
-        var underwaterVolume = calculateVolume(THREE.CSG.fromCSG(belowWaterCsg));
+        // Get volume and COG of below-water portion of object.
+        var underwaterVolumeCOG = calculateVolumeCenterOfMass(currentGeometry,true,false);
+        var underwaterVolume = underwaterVolumeCOG.volume;
         var fluidDisplacementMass = underwaterVolume * input.simulationFluidDensity;
         iterationSummary.underwaterVolume = underwaterVolume;
         iterationSummary.fluidDisplacementMass = fluidDisplacementMass;
+
+        // Add position data to output
+        iterationSummary.x = output.position.x;
+        iterationSummary.y = output.position.y;
+        iterationSummary.z = output.position.z;
+        oldPosition.x = output.position.x;
+        oldPosition.y = output.position.y;
+        oldPosition.z = output.position.z;
 
         // Move the volume based on floatation delta.
         // If the model is heavier than the water it displaces, this will be negative
@@ -153,26 +168,43 @@ function simulate(input){
             output.position.y -= simulationSpeed;
             debounce = true;
         }
+
         iterationSummary.floatDelta = floatDelta;
         iterationSummary.simulationSpeed = simulationSpeed;
-        iterationSummary.x = output.position.x;
-        iterationSummary.y = output.position.y;
-        iterationSummary.z = output.position.z;
-        console.log(iterationSummary);
+        //console.log(iterationSummary);
 
-        currentGeometry = output.geometry.clone();
-        currentGeometry.translate(output.position.x,output.position.y,output.position.z);
+        // Only translate the delta between old and new positions.
+        currentGeometry.translate(output.position.x - oldPosition.x,output.position.y - oldPosition.y,output.position.z - oldPosition.z);
 
         //if (checkCancel()){ return; }
-        sendProgressPacket(floatDelta,output.position);
+        sendProgressPacket(round((fluidDisplacementMass / input.modelWeight)*100,0),output.position);
+
+        // Check simulation state
+        if (Math.abs(floatDelta) < 0.001){
+            // We are stable in our current simulation. Move on!
+            break;
+            /*
+            if (input.simulationStabilityAxis == 0){
+                output.rotation.x++;
+                if (output.rotation.x > 180){
+                    break;
+                }
+            } else {
+                output.rotation.z++;
+                if (output.rotation.z > 180){
+                    break;
+                }
+            }
+            */
+        }
     }
 
     sendSuccessPacket(output);
 }
 
-function sendProgressPacket(floatDelta,position){
+function sendProgressPacket(progress,position){
     ipcRenderer.send('simulation-update-progress', {
-        progress: floatDelta,
+        progress: progress,
         position: position
     });
 }

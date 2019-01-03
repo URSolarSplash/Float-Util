@@ -17,7 +17,7 @@ function createMainWindow () {
 
 // Create the background browser window. This is used to run mesh floatation simulations.
 function createBackgroundWindow () {
-    backgroundWindow = new BrowserWindow({width: 100, height: 100, show: false})
+    backgroundWindow = new BrowserWindow({width: 640, height: 480, show: false})
     backgroundWindow.loadFile('background.html')
     backgroundWindow.on('closed', () => {
       backgroundWindow = null

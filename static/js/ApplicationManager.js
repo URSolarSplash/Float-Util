@@ -77,8 +77,9 @@ class ApplicationManager {
     }
 
     handleUpdateSuccess(payload){
-        this.results = payload;
+        this.results = payload.result;
         console.log(payload);
+        model.position.set(this.results.position.x,this.results.position.y,this.results.position.z);
         setUpdateButtonReadyState();
         this.hasResults = true;
         updateResults();
@@ -92,9 +93,9 @@ class ApplicationManager {
     }
 
     handleUpdateProgress(payload){
-        logger.log(payload);
+        //logger.log(payload);
         setUpdateButtonProgressState(payload.progress);
-        model.position.set(payload.position.x,payload.position.y,payload.position.z);
+        //model.position.set(payload.position.x,payload.position.y,payload.position.z);
     }
 
     startUpdate(doSimulate){

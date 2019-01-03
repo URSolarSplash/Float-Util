@@ -55,7 +55,7 @@ $(function(){
 });
 
 function setUpdateButtonProgressState(progress){
-    $("#update-panel").text("Updating, "+ progress+"...");
+    $("#update-panel").text("Updating, "+ progress+"%...");
     $("#update-panel").removeClass("update-panel-ready");
     $("#update-panel").off();
     /*

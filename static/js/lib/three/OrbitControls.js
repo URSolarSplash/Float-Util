@@ -381,7 +381,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}();
 
-	function dollyIn( dollyScale ) {
+	var dollyIn = function ( dollyScale ) {
 
 		if ( scope.object.isPerspectiveCamera ) {
 
@@ -401,8 +401,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 		}
 
 	}
+    this.dollyIn = dollyIn;
 
-	function dollyOut( dollyScale ) {
+	var dollyOut = function ( dollyScale ) {
 
 		if ( scope.object.isPerspectiveCamera ) {
 
@@ -422,6 +423,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 		}
 
 	}
+    this.dollyOut = dollyOut;
 
 	//
 	// event callbacks - update the object state

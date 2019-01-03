@@ -51,10 +51,12 @@ $(function(){
     updateDisplayState();
 
     $("#model-zoom-in").click(function(){
-
+        controls.dollyIn(1.2);
+        controls.update();
     });
     $("#model-zoom-out").click(function(){
-
+        controls.dollyOut(1.2);
+        controls.update();
     });
     $("#model-axes").click(function(){
         // Reset camera to default view position

@@ -1,7 +1,7 @@
 function updateResults(){
     if (Application.hasResults){
         $("#results").html(`
-            <p>Model File: `+Application.model.path+`</p>
+            <p>Model File: `+Application.modelPath+`</p>
             <p>Model Units: `+Application.modelUnits+`</p>
             <p>Model Scale Factor: `+Application.modelScaleFactor+`</p>
             <p>Model Size X (ft): `+Application.sizeX+`</p>

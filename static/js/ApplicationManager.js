@@ -80,6 +80,8 @@ class ApplicationManager {
         this.results = payload;
         console.log(payload);
         setUpdateButtonReadyState();
+        this.hasResults = true;
+        updateResults();
         this.isRunning = false;
     }
 

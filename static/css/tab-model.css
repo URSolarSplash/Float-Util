@@ -74,3 +74,7 @@
 #model-axes * {
     cursor: pointer;
 }
+
+#model-tab-pane {
+    overflow: hidden;
+}

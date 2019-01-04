@@ -139,7 +139,7 @@ hr {
     position: absolute;
     right: 2px;
     width: 350px;
-    bottom: 82px;
+    bottom: 142px;
     top: 42px;
     overflow-y: scroll;
 }
@@ -148,12 +148,14 @@ hr {
     position: absolute;
     right: 2px;
     width: 350px;
-    height: 50px;
-    bottom: 30px;
+    height: 48px;
+    bottom: 92px;
+    border:none;
 }
 
 .update-panel-ready {
     background-color: green;
+
 }
 
 .data-scroller {
@@ -365,6 +367,22 @@ hr {
 #side-panel input.coords-z {
     display: inline-block;
     width: calc(33% - 1px);
+}
+
+#settings-save {
+    position: absolute;
+    right: 2px;
+    width: 350px;
+    height: 29px;
+    bottom: 61px;
+}
+
+#settings-load {
+    position: absolute;
+    right: 2px;
+    width: 350px;
+    height: 29px;
+    bottom: 30px;
 }
 
 /* Scrollbar behavior */

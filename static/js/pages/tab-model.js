@@ -14,7 +14,7 @@ function setupAxes(){
     axesScene = new THREE.Scene();
     var range = 0.6;
 	axesCamera = new THREE.OrthographicCamera(-range,range,range,-range,0.01,100);
-	axesRenderer = new THREE.WebGLRenderer({antialias: false, alpha: true});
+	axesRenderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 	axesRenderer.setSize($(axesContainer).width(),$(axesContainer).height(),false);
 	axesContainer.appendChild(axesRenderer.domElement);
     for (var x = 0; x < 3; x++){
@@ -37,6 +37,7 @@ $(function(){
     createScene();
     initSky();
 
+    resetCamera();
 
     var stabilityAxisTexture = THREE.ImageUtils.loadTexture('static/img/stability-axis.png');
     stabilityAxisMarker = new THREE.Mesh(new THREE.PlaneGeometry(2, 1), new THREE.MeshBasicMaterial({map: stabilityAxisTexture, transparent: true, side: THREE.DoubleSide}));
@@ -62,6 +63,9 @@ $(function(){
         // Reset camera to default view position
         resetCamera();
     });
+    $("#model-tab").click(function(){
+        resizeModelView();
+    })
 
 	animate();
 });
@@ -96,10 +100,16 @@ function updateDisplayState(){
         scene.remove(axesHelper);
         //scene.remove(waterModel);
     }
+    if (Application.simulationStabilityAxis == 0){
+        stabilityAxisMarker.rotation.set(0,Math.PI/2,0);
+    } else {
+        stabilityAxisMarker.rotation.set(0,0,0);
+    }
 }
 
 function setModel(modelGeometry){
     scene.remove(model);
+    updateDisplayState();
     if (modelGeometry != null){
         model = new THREE.Mesh(modelGeometry, material);
         scene.add(model);
@@ -108,12 +118,10 @@ function setModel(modelGeometry){
         var stabilityAxisSize = 0;
         if (Application.simulationStabilityAxis == 0){
             // X
-            stabilityAxisSize = Application.sizeX*1.67;
-            stabilityAxisMarker.rotation.set(0,0,0);
+            stabilityAxisSize = Application.sizeZ*1.67;
         } else {
             // Z
-            stabilityAxisSize = Application.sizeZ*1.67;
-            stabilityAxisMarker.rotation.set(0,Math.PI/2,0);
+            stabilityAxisSize = Application.sizeX*1.67;
         }
         stabilityAxisMarker.scale.set(stabilityAxisSize,stabilityAxisSize,stabilityAxisSize);
         stabilityAxisMarker.position.set(0,0.5*stabilityAxisSize,0);
@@ -151,7 +159,7 @@ function createScene(){
 
     grid = new THREE.GridHelper(10, 10, 0xffffff, 0xffffff );
 	//scene.add( grid );
-    grid.position.set(0,-0.01,0);
+    grid.position.set(10,-0.01,0);
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	controls.maxPolarAngle = Math.PI / 2.2;
@@ -187,10 +195,14 @@ function render() {
 
 
 $(window).resize(function(){
+    resizeModelView();
+});
+
+function resizeModelView(){
     camera.aspect = $(container).width()/$(container).height();
     camera.updateProjectionMatrix();
 	renderer.setSize($(container).width(),$(container).height(),false);
-});
+}
 
 function initSky() {
 	// Add Sky
@@ -212,7 +224,6 @@ function initSky() {
 
     scene.add( new THREE.HemisphereLight(0xdddddd,0xdddddd));
     sunLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    sunLight.position.set(100,100,0);
     scene.add(sunLight);
 
 	var effectController  = {
@@ -222,7 +233,7 @@ function initSky() {
 		mieDirectionalG: 0.8,
 		luminance: 1,
 		inclination: 0, // elevation / inclination
-		azimuth: 0.15, // Facing front,
+		azimuth: 0.35, // Facing front,
 		sun: ! true
 	};
 	var distance = 400000;

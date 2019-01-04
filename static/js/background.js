@@ -1,29 +1,12 @@
-
 var stlLoader = new THREE.STLLoader();
 const { ipcRenderer } = require('electron');
 
 logger.log('[Background Thread] Background thread initialized.');
 
-THREE.Geometry.create = function (obj) {
-    var field = new THREE.Geometry();
-    for (var prop in obj) {
-        if (field.hasOwnProperty(prop)) {
-            field[prop] = obj[prop];
-        }
-    }
-
-    return field;
-}
 
 var isProcessing = false;
 var lastInput = null;
 var isCancelled = false;
-
-//simulation-start
-//simulation-cancel
-//simulation-update-progress
-//simulation-success
-//simulation-failure
 
 $(function(){
     ipcRenderer.on('simulation-start', (event, payload) => {
@@ -55,35 +38,20 @@ $(function(){
             logger.log('[Background Thread] Finished simulation.');
         }
 	});
-
-/*
-    ipcRenderer.on('simulation-cancel', (event,payload) => {
-        logger.log('[Background Thread] Received simulation cancel message!');
-        if (isProcessing){
-            isCancelled = true;
-        }
-    });*/
 });
-/*
-function checkCancel(){
-    if (isCancelled){
-        isProcessing = false;
-        isCancelled = false;
-        sendErrorPacket("Simulation cancelled by user!");
-        return true;
-    }
-    return false;
-}*/
 
 function simulate(input){
     var output = {};
 
     // Apply the scaling and rotation options to the geometry.
     // This is a one-time operation; the results are baked into geometry vertex positions.
-    input.geometry.scale(input.modelScaleFactor,input.modelScaleFactor,input.modelScaleFactor);
-    input.geometry.rotateX(input.modelRotationX * (Math.PI/180));
-    input.geometry.rotateY(input.modelRotationY * (Math.PI/180));
-    input.geometry.rotateZ(input.modelRotationZ * (Math.PI/180));
+    input.geometry.applyMatrix(generateTransformMatrix(0,0,0,
+        input.modelRotationX,
+        input.modelRotationY,
+        input.modelRotationZ,
+        input.modelScaleFactor,
+        input.modelScaleFactor,
+        input.modelScaleFactor))
     input.geometry.computeBoundingBox();
 
     input.geometry.translate(input.initialModelOffsetX,input.initialModelOffsetY,input.initialModelOffsetZ);
@@ -128,6 +96,8 @@ function simulate(input){
     var debounce = false;
     var oldPosition = {x:0, y:0, z:0};
     var simulationDone = false;
+    var progress = 0;
+    setTransformation(0,0,0,0,0,0);
     while (!simulationDone){
         //if (checkCancel()){ return; }
         output.iteration++;
@@ -173,39 +143,43 @@ function simulate(input){
         iterationSummary.simulationSpeed = simulationSpeed;
         //console.log(iterationSummary);
 
-        // Only translate the delta between old and new positions.
-        currentGeometry.translate(output.position.x - oldPosition.x,output.position.y - oldPosition.y,output.position.z - oldPosition.z);
-
         //if (checkCancel()){ return; }
-        sendProgressPacket(round((fluidDisplacementMass / input.modelWeight)*100,0),output.position);
 
         // Check simulation state
         if (Math.abs(floatDelta) < 0.001){
+            simulationSpeed = 0.1;
+            debounce = false;
+            // Save displaced volume for current pos/rot
             // We are stable in our current simulation. Move on!
-            break;
-            /*
             if (input.simulationStabilityAxis == 0){
                 output.rotation.x++;
                 if (output.rotation.x > 180){
-                    break;
+                    simulationDone = true;
                 }
+                progress = (output.rotation.x / 180) * 100;
             } else {
                 output.rotation.z++;
                 if (output.rotation.z > 180){
-                    break;
+                    simulationDone = true;
                 }
+                progress = (output.rotation.z / 180) * 100;
             }
-            */
+            sendProgressPacket(round(progress,0),output.position,output.rotation);
         }
+
+        // Set the transformation matrix for next iteration
+        setTransformation(output.position.x,output.position.y,output.position.z,output.rotation.x,output.rotation.y,output.rotation.z);
+
     }
 
     sendSuccessPacket(output);
 }
 
-function sendProgressPacket(progress,position){
+function sendProgressPacket(progress,position,rotation){
     ipcRenderer.send('simulation-update-progress', {
         progress: progress,
-        position: position
+        position: position,
+        rotation: rotation
     });
 }
 

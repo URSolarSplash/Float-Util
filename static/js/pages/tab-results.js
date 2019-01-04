@@ -27,3 +27,13 @@ function updateResults(){
 $(function(){
     updateResults();
 })
+
+
+// Shows a div indicating the results are out of date.
+function invalidateResults(){
+
+}
+
+function validateResults(){
+    
+}

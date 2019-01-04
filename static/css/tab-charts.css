@@ -1,0 +1,20 @@
+.stabilityChartTop {
+    display: block;
+    background-color: #222222;
+    height: 50%;
+    margin-right: 0px;
+    left: 0;
+    top:0;
+    position: relative;
+    border-bottom: 5px solid #323232;
+}
+
+.stabilityChartBottom {
+    display: block;
+    background-color: #222222;
+    height: 50%;
+    margin-right: 0px;
+    left: 0;
+    bottom:0;
+    position: relative;
+}

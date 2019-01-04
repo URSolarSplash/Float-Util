@@ -6,6 +6,7 @@
         <title>URSS Float Utility</title>
 
         <!-- Load CSS Files -->
+        <link rel="stylesheet" type="text/css" href="static/font-awesome/css/all.css">
         <link rel="stylesheet" type="text/css" href="static/css/main.css">
         <link rel="stylesheet" type="text/css" href="static/css/lib/epoch.min.css">
         <link rel="stylesheet" type="text/css" href="static/css/tab-charts.css">
@@ -24,7 +25,7 @@
         <script src="static/js/lib/three/Sky.js"></script>
         <script src="static/js/lib/three/STLLoader.js"></script>
         <script src="static/js/lib/charts/Chart.bundle.js"></script>
-        <script src="static/js/lib/three/CalculationUtils.js"></script>
+        <script src="static/js/CalculationUtils.js"></script>
         <script src="static/js/tabs.js" type="text/javascript"></script>
         <script src="static/js/modal.js" type="text/javascript"></script>
 
@@ -50,7 +51,9 @@
 
         <div id="top-panel">
             <div class="panel">
-                <div id="displayOptions" class="button">Display Options</div>
+                <!--
+                <div id="displayOptions" class="button"><i class="fas fa-tv"></i>&nbsp;Display Options</div>
+                -->
             </div>
         </div>
 
@@ -89,11 +92,13 @@
                     <input id="model-cog-x" class="model-property coords-x" type="number" value="0"/>
                     <input id="model-cog-y" class="model-property coords-y" type="number" value="0"/>
                     <input id="model-cog-z" class="model-property coords-z" type="number" value="0"/>
+                    <br>
+                    <button>Compute Center of Mass</button>
                 </div>
                 <div class="status-pane">
                     <div class="status-bar-toggle"></div>
                     <h1>Simulation Settings</h1>
-                    <p>Stability Axis:</p>
+                    <p>Primary Stability (roll) Axis:</p>
                      <select class="model-property" id="model-stability-axis">
                       <option value="x">X Axis</option>
                       <option value="z">Z Axis</option>
@@ -105,6 +110,8 @@
             </form>
         </div>
 
+        <div id="settings-save" class="button"><i class="fas fa-save"></i>&nbsp;Save Test Case</div>
+        <div id="settings-load" class="button"><i class="fas fa-file-import"></i>&nbsp;Load Test Case</div>
         <div id="update-panel" class="button update-panel-ready">Update Results
         </div>
 
@@ -130,7 +137,12 @@
                     </div>
                 </div>
                 <div id="stability-tab-pane" class="tab-pane">
-                    <h2>Stability Charts</h2>
+                    <div class="stabilityChartTop">
+                        <canvas id="stabilityChartTop"></canvas>
+                    </div>
+                    <div class="stabilityChartBottom">
+                        <canvas id="stabilityChartBottom"></canvas>
+                    </div>
                 </div>
                 <div id="waterline-tab-pane" class="tab-pane">
                     <h2>Waterline</h2>

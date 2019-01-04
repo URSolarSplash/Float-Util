@@ -17,7 +17,7 @@ function createMainWindow () {
 
 // Create the background browser window. This is used to run mesh floatation simulations.
 function createBackgroundWindow () {
-    backgroundWindow = new BrowserWindow({width: 640, height: 480, show: false})
+    backgroundWindow = new BrowserWindow({width: 640, height: 480, show: true})
     backgroundWindow.loadFile('background.html')
     backgroundWindow.on('closed', () => {
       backgroundWindow = null
@@ -42,7 +42,10 @@ app.on('before-quit', function(){
 });
 
 ipcMain.on('simulation-start', (event, payload) => backgroundWindow.webContents.send('simulation-start', payload));
-ipcMain.on('simulation-cancel', (event, payload) => backgroundWindow.webContents.send('simulation-cancel', payload));
+ipcMain.on('simulation-cancel', (event, payload) => {
+    // When we receive a simulation cancel event, clear the simulation by reloading the background page.
+    backgroundWindow.reload();
+});
 ipcMain.on('simulation-update-progress', (event, payload) => mainWindow.webContents.send('simulation-update-progress', payload));
 ipcMain.on('simulation-success', (event, payload) => mainWindow.webContents.send('simulation-success', payload));
 ipcMain.on('simulation-failure', (event, payload) => mainWindow.webContents.send('simulation-failure', payload));

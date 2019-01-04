@@ -80,6 +80,7 @@ class ApplicationManager {
         this.results = payload.result;
         console.log(payload);
         model.position.set(this.results.position.x,this.results.position.y,this.results.position.z);
+        model.rotation.set(this.results.rotation.x * (Math.PI/180),this.results.rotation.y * (Math.PI/180),this.results.rotation.z * (Math.PI/180));
         setUpdateButtonReadyState();
         this.hasResults = true;
         updateResults();
@@ -95,17 +96,22 @@ class ApplicationManager {
     handleUpdateProgress(payload){
         //logger.log(payload);
         setUpdateButtonProgressState(payload.progress);
-        //model.position.set(payload.position.x,payload.position.y,payload.position.z);
+        model.position.set(payload.position.x,payload.position.y,payload.position.z);
+        model.rotation.set(payload.rotation.x * (Math.PI/180),payload.rotation.y * (Math.PI/180),payload.rotation.z * (Math.PI/180));
     }
 
     startUpdate(doSimulate){
         if (!this.isRunning){
             this.isRunning = true;
 
+
             // Assemble input parameters for the background thread.
             var simulationParameterPacket = {};
 
             Application.pullSettings();
+
+            // Update display state
+            updateDisplayState();
 
             simulationParameterPacket.modelPath = this.modelPath;
             simulationParameterPacket.modelUnits = this.modelUnits;
@@ -127,10 +133,13 @@ class ApplicationManager {
                 stlLoader.load(simulationParameterPacket.modelPath, function (geometry) {
                     // Apply the scaling and rotation options to the geometry.
                     // This is a one-time operation; the results are baked into geometry vertex positions.
-                    geometry.scale(simulationParameterPacket.modelScaleFactor,simulationParameterPacket.modelScaleFactor,simulationParameterPacket.modelScaleFactor);
-                    geometry.rotateX(simulationParameterPacket.modelRotationX * (Math.PI/180));
-                    geometry.rotateY(simulationParameterPacket.modelRotationY * (Math.PI/180));
-                    geometry.rotateZ(simulationParameterPacket.modelRotationZ * (Math.PI/180));
+                    geometry.applyMatrix(generateTransformMatrix(0,0,0,
+                        simulationParameterPacket.modelRotationX,
+                        simulationParameterPacket.modelRotationY,
+                        simulationParameterPacket.modelRotationZ,
+                        simulationParameterPacket.modelScaleFactor,
+                        simulationParameterPacket.modelScaleFactor,
+                        simulationParameterPacket.modelScaleFactor))
                     geometry.computeBoundingBox();
 
                     // Calculate model sizing data
@@ -194,8 +203,17 @@ class ApplicationManager {
     }
 
     cancelUpdate(){
+        /*
         logger.log("[Main Thread] Cancelling simulation by user...");
         ipcRenderer.send('simulation-cancel', {});
+        if (this.running){
+            this.isRunning = false;
+            // Wait to set button to ready state.
+            setTimeout(function(){
+                setUpdateButtonReadyState();
+            },2000);
+        }
+        */
     }
 }
 
